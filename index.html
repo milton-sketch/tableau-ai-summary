@@ -291,9 +291,16 @@ document.getElementById('save-setup-btn').addEventListener('click', function() {
   sessionStorage.setItem('ai_ext_mode',   mode);
   document.getElementById('sheet-select-main').value = document.getElementById('sheet-select-setup').value;
   showMain();
+  syncMainSheetSelector();
 });
 
-document.getElementById('settings-link').addEventListener('click', showSetup);
+  document.getElementById('settings-link').addEventListener('click', showSetup);
+
+  // ── Sync sheet selector visibility on main screen ──────
+  function syncMainSheetSelector() {
+    var mode = sessionStorage.getItem('ai_ext_mode') || 'single';
+    document.getElementById('sheet-select-main').style.display = mode === 'all' ? 'none' : '';
+  }
 
 // ── Build prompt (single sheet) ──────────────────────────
 function buildPrompt(sheetName, activeFilters, rows, rowCount) {
@@ -329,11 +336,11 @@ async function generateSummary() {
 
     if (!sheetsToRead.length) throw new Error('No sheets found.');
 
-    var maxRows = mode === 'all' ? 100 : 200;
+    var maxRows = 10000;
 
     var sheetData = await Promise.all(sheetsToRead.map(async function(sheet) {
       var results = await Promise.all([
-        sheet.getSummaryDataAsync({ maxRows: 500, ignoreSelection: false }),
+        sheet.getSummaryDataAsync({ maxRows: 10000, ignoreSelection: false }),
         sheet.getFiltersAsync()
       ]);
       var summary = results[0], filters = results[1];
@@ -345,7 +352,7 @@ async function generateSummary() {
           return f.fieldName;
         });
       var cols = summary.columns.map(function(c) { return c.fieldName; });
-      var rows = summary.data.slice(0, maxRows).map(function(row) {
+      var rows = summary.data.slice(0, 10000).map(function(row) {
         return row.map(function(cell, i) { return cols[i] + ': ' + cell.formattedValue; }).join(' | ');
       });
       return { name: sheet.name, activeFilters: activeFilters, rows: rows, rowCount: summary.data.length };
@@ -419,6 +426,7 @@ function initExtension() {
       apiKey = savedKey; tone = savedTone; selectedModel = savedModel; customPrompt = savedPrompt;
       log('Saved key found — going to main screen.');
       showMain();
+      syncMainSheetSelector();
     } else {
       log('No saved key — showing setup.');
       document.getElementById('custom-prompt').value = DEFAULT_PROMPT;
