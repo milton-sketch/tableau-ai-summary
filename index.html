@@ -120,8 +120,10 @@
 <!-- ══════════════ SETUP SCREEN ══════════════ -->
 <div id="setup-screen">
   <div class="setup-card">
-    <h2>🤖 AI Summary — Setup</h2>
-    <p>Configure your Anthropic API key and preferences. This is stored only in your browser.</p>
+    <h2>🤖 AI Summary — Setup <span style="font-size:11px;color:#aaa;font-weight:400;">v1.4</span></h2>
+    <p>Configure your Gemini API key and preferences. This is stored only in your browser.</p>
+    <!-- Debug log -->
+    <div id="debug-log" style="background:#f4f4f4;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:11px;color:#555;font-family:monospace;margin-bottom:14px;max-height:80px;overflow-y:auto;"></div>
 
     <label>Gemini API Key</label>
     <input type="password" id="api-key-input" placeholder="AIza..." />
@@ -167,30 +169,44 @@
 
 
 <script>
+  function log(msg) {
+    const el = document.getElementById("debug-log");
+    if (!el) return;
+    const t = new Date().toLocaleTimeString();
+    el.innerHTML += `[${t}] ${msg}<br>`;
+    el.scrollTop = el.scrollHeight;
+  }
+
   // ── State ──────────────────────────────────────────────
   let apiKey = "", tone = "executive", sheets = [];
 
   // ── Init ───────────────────────────────────────────────
   function initExtension() {
+    log("tableau.extensions found — calling initializeAsync...");
     tableau.extensions.initializeAsync({ configure: showSetup }).then(() => {
+      log("initializeAsync resolved ✓");
       sheets = tableau.extensions.dashboardContent.dashboard.worksheets;
+      log(`Found ${sheets.length} worksheet(s): ${sheets.map(s => s.name).join(", ")}`);
       populateSheetDropdowns();
       const savedKey  = sessionStorage.getItem("ai_ext_key");
       const savedTone = sessionStorage.getItem("ai_ext_tone") || "executive";
-      if (savedKey) { apiKey = savedKey; tone = savedTone; showMain(); }
-      else { showSetup(); }
-    }).catch(err => showError("Failed to init Tableau extension: " + err));
+      if (savedKey) { apiKey = savedKey; tone = savedTone; log("Saved key found — going to main screen."); showMain(); }
+      else { log("No saved key — showing setup."); showSetup(); }
+    }).catch(err => { log("initializeAsync ERROR: " + err); showError("Failed to init: " + err); });
   }
 
   // Poll until tableau.extensions is available (handles async script loading)
   function waitForTableau(attempts) {
-    if (attempts <= 0) { showBrowserPreview(); return; }
+    log(`Waiting for tableau object... attempt ${26 - attempts}/25`);
+    if (attempts <= 0) { log("Timed out waiting for tableau — falling back to browser preview."); showBrowserPreview(); return; }
     if (typeof tableau !== "undefined" && tableau.extensions) {
+      log("tableau.extensions detected ✓");
       initExtension();
     } else {
       setTimeout(() => waitForTableau(attempts - 1), 200);
     }
   }
+  log("Script started — waiting for tableau...");
   waitForTableau(25); // wait up to 5 seconds
 
   // ── Sheet dropdowns ────────────────────────────────────
