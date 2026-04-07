@@ -7,9 +7,10 @@
   <script src="./tableau.extensions.1.latest.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f7f8fa; padding: 16px; color: #1a1a2e; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f7f8fa; padding: 10px; color: #1a1a2e; }
     #setup-screen, #main-screen { display: none; }
-    #setup-screen.active, #main-screen.active { display: block; }
+    #setup-screen.active { display: block; }
+    #main-screen.active { display: flex; flex-direction: column; height: calc(100vh - 20px); gap: 8px; }
 
     .card { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); max-width: 520px; margin: 0 auto; }
     .card h2 { font-size: 16px; margin-bottom: 6px; }
@@ -46,17 +47,21 @@
     .btn-ghost { background: none; border: 1px solid #ddd; color: #777; font-size: 11px; padding: 5px 10px; border-radius: 6px; cursor: pointer; }
     .btn-ghost:hover { border-color: #7c4dff; color: #7c4dff; }
 
-    .toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-    .toolbar select { width: auto; margin: 0; flex: 1; min-width: 140px; }
-
-    #summary-box { background: white; border-radius: 10px; padding: 16px 18px; min-height: 90px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); font-size: 13.5px; line-height: 1.7; color: #222; border-left: 4px solid #7c4dff; }
+    /* Summary box fills all available space */
+    #summary-box { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: white; border-radius: 10px; padding: 14px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); font-size: 13.5px; line-height: 1.7; color: #222; border-left: 4px solid #7c4dff; }
     #summary-box.error { border-left-color: #e53935; color: #c62828; }
-    .summary-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-    .summary-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #7c4dff; }
-    .summary-meta  { font-size: 11px; color: #aaa; }
+    #summary-text { flex: 1; }
+    .summary-footer { margin-top: 10px; padding-top: 6px; border-top: 1px solid #f0f0f0; flex-shrink: 0; }
+    .summary-meta { font-size: 10.5px; color: #bbb; }
+    #filter-pills { display: none; }
 
-    #filter-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
-    .pill { background: #ede7ff; color: #5e35b1; font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500; }
+    /* Compact action bar at the bottom */
+    .action-bar { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .action-bar select { flex: 1; margin: 0; padding: 6px 8px; font-size: 12px; border: 1px solid #ddd; border-radius: 6px; min-width: 0; outline: none; color: #1a1a2e; }
+    .action-bar select:focus { border-color: #7c4dff; }
+    #generate-btn { width: auto; padding: 7px 14px; flex-shrink: 0; }
+    #settings-link { font-size: 18px; color: #bbb; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 6px; flex-shrink: 0; margin-top: 0; }
+    #settings-link:hover { color: #7c4dff; background: #f0ebff; }
 
     .spinner { width: 18px; height: 18px; border: 2px solid #ddd; border-top-color: #7c4dff; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -141,19 +146,18 @@
 
 <!-- ══════════ MAIN ══════════ -->
 <div id="main-screen">
-  <div class="toolbar">
-    <select id="sheet-select-main"></select>
-    <button class="btn btn-primary" id="generate-btn">✨ Generate Summary</button>
-  </div>
-  <div id="filter-pills"></div>
   <div id="summary-box">
-    <div class="summary-header">
-      <span class="summary-label">AI Summary</span>
+    <div id="summary-text" style="color:#bbb;font-style:italic;">Press ✨ to generate a summary.</div>
+    <div class="summary-footer">
       <span class="summary-meta" id="summary-meta"></span>
     </div>
-    <div id="summary-text" style="color:#bbb;font-style:italic;">Click "Generate Summary" to begin.</div>
   </div>
-  <a id="settings-link">⚙ Change settings</a>
+  <div id="filter-pills"></div>
+  <div class="action-bar">
+    <select id="sheet-select-main"></select>
+    <button class="btn btn-primary" id="generate-btn">✨ Generate</button>
+    <a id="settings-link" title="Change settings">⚙</a>
+  </div>
 </div>
 
 <script>
@@ -229,7 +233,7 @@ function showBrowserPreview() {
   showSetup();
 }
 function showError(msg) {
-  document.getElementById('summary-box').className = 'error';
+  document.getElementById('summary-box').classList.add('error');
   document.getElementById('summary-text').textContent = msg;
 }
 
@@ -324,8 +328,8 @@ async function generateSummary() {
   var mode    = sessionStorage.getItem('ai_ext_mode') || 'single';
 
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Thinking…';
-  box.className = '';
+  btn.innerHTML = '<span class="spinner"></span>';
+  box.classList.remove('error');
   textEl.textContent = 'Fetching dashboard data…';
   pillsEl.innerHTML = ''; metaEl.textContent = '';
 
@@ -396,17 +400,18 @@ async function generateSummary() {
     if (!resp.ok) { var e = await resp.json(); throw new Error(e.error && e.error.message || 'API error ' + resp.status); }
     var result  = await resp.json();
     var summary = result.candidates && result.candidates[0] && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts[0] && result.candidates[0].content.parts[0].text || 'No summary returned.';
-    box.className = '';
+    box.classList.remove('error');
     textEl.textContent = summary;
+    textEl.style.color = ''; textEl.style.fontStyle = '';
     var totalRows = sheetData.reduce(function(a, s) { return a + s.rowCount; }, 0);
     metaEl.textContent = model + ' · ' + (mode === 'all' ? sheetData.length + ' sheets' : '1 sheet') + ' · ' + totalRows + ' rows · ' + new Date().toLocaleTimeString();
 
   } catch(err) {
-    box.className = 'error';
+    box.classList.add('error');
     textEl.textContent = 'Error: ' + err.message;
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '✨ Generate Summary';
+    btn.innerHTML = '✨ Generate';
   }
 }
 
