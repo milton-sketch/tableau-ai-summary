@@ -171,6 +171,7 @@
   let apiKey = "", tone = "executive", sheets = [];
 
   // ── Init ───────────────────────────────────────────────
+  document.addEventListener("DOMContentLoaded", () => {
   // If running outside Tableau (e.g. browser preview), show setup with mock data
   if (typeof tableau === "undefined" || !tableau.extensions) {
     showBrowserPreview();
@@ -190,6 +191,7 @@
       }
     }).catch(err => showError("Failed to init Tableau extension: " + err));
   }
+  }); // end DOMContentLoaded
 
   // ── Sheet dropdowns ────────────────────────────────────
   function populateSheetDropdowns() {
