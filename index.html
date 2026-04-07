@@ -171,20 +171,25 @@
   let apiKey = "", tone = "executive", sheets = [];
 
   // ── Init ───────────────────────────────────────────────
-  tableau.extensions.initializeAsync({ configure: showSetup }).then(() => {
-    sheets = tableau.extensions.dashboardContent.dashboard.worksheets;
-    populateSheetDropdowns();
+  // If running outside Tableau (e.g. browser preview), show setup with mock data
+  if (typeof tableau === "undefined" || !tableau.extensions) {
+    showBrowserPreview();
+  } else {
+    tableau.extensions.initializeAsync({ configure: showSetup }).then(() => {
+      sheets = tableau.extensions.dashboardContent.dashboard.worksheets;
+      populateSheetDropdowns();
 
-    const savedKey  = sessionStorage.getItem("ai_ext_key");
-    const savedTone = sessionStorage.getItem("ai_ext_tone") || "executive";
+      const savedKey  = sessionStorage.getItem("ai_ext_key");
+      const savedTone = sessionStorage.getItem("ai_ext_tone") || "executive";
 
-    if (savedKey) {
-      apiKey = savedKey; tone = savedTone;
-      showMain();
-    } else {
-      showSetup();
-    }
-  }).catch(err => showError("Failed to init Tableau extension: " + err));
+      if (savedKey) {
+        apiKey = savedKey; tone = savedTone;
+        showMain();
+      } else {
+        showSetup();
+      }
+    }).catch(err => showError("Failed to init Tableau extension: " + err));
+  }
 
   // ── Sheet dropdowns ────────────────────────────────────
   function populateSheetDropdowns() {
@@ -330,6 +335,14 @@ Respond with the summary only — no preamble, no markdown.`;
       btn.disabled = false;
       btn.innerHTML = "✨ Generate Summary";
     }
+  }
+
+  function showBrowserPreview() {
+    // Mock a single sheet for browser testing
+    sheets = [{ name: "Sheet 1 (Preview — not in Tableau)" }];
+    populateSheetDropdowns();
+    document.getElementById("setup-screen").classList.add("active");
+    document.getElementById("api-key-input").placeholder = "sk-ant-... (enter your real key to test)";
   }
 
   function showError(msg) {
