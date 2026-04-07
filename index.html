@@ -120,7 +120,7 @@
 <!-- ══════════════ SETUP SCREEN ══════════════ -->
 <div id="setup-screen">
   <div class="setup-card">
-    <h2>🤖 AI Summary — Setup <span style="font-size:11px;color:#aaa;font-weight:400;">v1.6</span></h2>
+    <h2>🤖 AI Summary — Setup <span style="font-size:11px;color:#aaa;font-weight:400;">v1.7</span></h2>
     <p>Configure your Gemini API key and preferences. This is stored only in your browser.</p>
     <!-- Debug log -->
     <div id="debug-log" style="background:#f4f4f4;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:11px;color:#555;font-family:monospace;margin-bottom:14px;max-height:80px;overflow-y:auto;"></div>
@@ -178,7 +178,7 @@
   }
 
   // ── State ──────────────────────────────────────────────
-  let apiKey = "", tone = "executive", sheets = [];
+  let apiKey = "", tone = "executive", sheets = [], selectedModel = "";
 
   // ── Init ───────────────────────────────────────────────
   function initExtension() {
@@ -188,9 +188,10 @@
       sheets = tableau.extensions.dashboardContent.dashboard.worksheets;
       log(`Found ${sheets.length} worksheet(s): ${sheets.map(s => s.name).join(", ")}`);
       populateSheetDropdowns();
-      const savedKey  = sessionStorage.getItem("ai_ext_key");
-      const savedTone = sessionStorage.getItem("ai_ext_tone") || "executive";
-      if (savedKey) { apiKey = savedKey; tone = savedTone; log("Saved key found — going to main screen."); showMain(); }
+      const savedKey   = sessionStorage.getItem("ai_ext_key");
+      const savedTone  = sessionStorage.getItem("ai_ext_tone") || "executive";
+      const savedModel = sessionStorage.getItem("ai_ext_model") || "";
+      if (savedKey) { apiKey = savedKey; tone = savedTone; selectedModel = savedModel; log("Saved key found — going to main screen."); showMain(); }
       else { log("No saved key — showing setup."); showSetup(); }
     }).catch(err => { log("initializeAsync ERROR: " + err); showError("Failed to init: " + err); });
   }
@@ -233,10 +234,13 @@
   // ── Save setup ─────────────────────────────────────────
   document.getElementById("save-setup-btn").addEventListener("click", () => {
     const k = document.getElementById("api-key-input").value.trim();
+    const model = document.getElementById("model-select").value;
     if (!k.startsWith("AIza")) return alert("Please enter a valid Gemini API key (starts with AIza).");
+    if (!model) return alert("Please load and select a model first.");
     apiKey = k; tone = document.getElementById("tone-select").value;
     sessionStorage.setItem("ai_ext_key", apiKey);
     sessionStorage.setItem("ai_ext_tone", tone);
+    sessionStorage.setItem("ai_ext_model", model);
 
     // Sync sheet selection
     const setupSheet = document.getElementById("sheet-select-setup").value;
@@ -244,7 +248,45 @@
     showMain();
   });
 
-  document.getElementById("settings-link").addEventListener("click", showSetup);
+  // ── Load Gemini Models ─────────────────────────────────
+  document.getElementById("load-models-btn").addEventListener("click", async () => {
+    const k = document.getElementById("api-key-input").value.trim();
+    const sel = document.getElementById("model-select");
+    const hint = document.getElementById("model-hint");
+    if (!k) { alert("Enter your API key first."); return; }
+
+    sel.innerHTML = "<option>Loading…</option>";
+    hint.textContent = "";
+    try {
+      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${k}`);
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error?.message || "API error");
+
+      // Filter to only models that support generateContent
+      const models = (data.models || []).filter(m =>
+        m.supportedGenerationMethods?.includes("generateContent")
+      );
+
+      if (!models.length) throw new Error("No generateContent models found.");
+
+      sel.innerHTML = models.map(m => {
+        const id = m.name.replace("models/", "");
+        const label = m.displayName || id;
+        return `<option value="${id}">${label}</option>`;
+      }).join("");
+
+      // Try to default to a flash model
+      const flashOpt = [...sel.options].find(o => o.value.includes("flash"));
+      if (flashOpt) flashOpt.selected = true;
+
+      hint.textContent = `${models.length} models loaded ✓`;
+      hint.style.color = "#4caf50";
+    } catch (err) {
+      sel.innerHTML = "<option value=''>— failed to load —</option>";
+      hint.textContent = "Error: " + err.message;
+      hint.style.color = "#e53935";
+    }
+  });
 
   // ── Generate Summary ───────────────────────────────────
   document.getElementById("generate-btn").addEventListener("click", generateSummary);
@@ -318,8 +360,9 @@ Respond with the summary only — no preamble, no markdown.`;
 
       // 4. Call Gemini API
       textEl.textContent = "Generating summary…";
+      const model = sessionStorage.getItem("ai_ext_model") || selectedModel || "gemini-2.0-flash-lite";
       const resp = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
