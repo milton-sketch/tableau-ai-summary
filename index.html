@@ -171,27 +171,27 @@
   let apiKey = "", tone = "executive", sheets = [];
 
   // ── Init ───────────────────────────────────────────────
-  document.addEventListener("DOMContentLoaded", () => {
-  // If running outside Tableau (e.g. browser preview), show setup with mock data
-  if (typeof tableau === "undefined" || !tableau.extensions) {
-    showBrowserPreview();
-  } else {
+  function initExtension() {
     tableau.extensions.initializeAsync({ configure: showSetup }).then(() => {
       sheets = tableau.extensions.dashboardContent.dashboard.worksheets;
       populateSheetDropdowns();
-
       const savedKey  = sessionStorage.getItem("ai_ext_key");
       const savedTone = sessionStorage.getItem("ai_ext_tone") || "executive";
-
-      if (savedKey) {
-        apiKey = savedKey; tone = savedTone;
-        showMain();
-      } else {
-        showSetup();
-      }
+      if (savedKey) { apiKey = savedKey; tone = savedTone; showMain(); }
+      else { showSetup(); }
     }).catch(err => showError("Failed to init Tableau extension: " + err));
   }
-  }); // end DOMContentLoaded
+
+  // Poll until tableau.extensions is available (handles async script loading)
+  function waitForTableau(attempts) {
+    if (attempts <= 0) { showBrowserPreview(); return; }
+    if (typeof tableau !== "undefined" && tableau.extensions) {
+      initExtension();
+    } else {
+      setTimeout(() => waitForTableau(attempts - 1), 200);
+    }
+  }
+  waitForTableau(25); // wait up to 5 seconds
 
   // ── Sheet dropdowns ────────────────────────────────────
   function populateSheetDropdowns() {
