@@ -78,7 +78,7 @@
 <!-- ══════════════ SETUP SCREEN ══════════════ -->
 <div id="setup-screen">
   <div class="setup-card">
-    <h2>🤖 AI Summary — Setup <span style="font-size:11px;color:#aaa;font-weight:400;">v2.0</span></h2>
+    <h2>🤖 AI Summary — Setup <span style="font-size:11px;color:#aaa;font-weight:400;">v2.1</span></h2>
     <p>Configure your extension settings. All data is stored only in your browser.</p>
 
     <div id="debug-log"></div>
@@ -256,7 +256,13 @@ Write 3-4 sentences in plain, friendly English that anyone can understand. Avoid
     });
   }
 
-  // ── Load Gemini Models ─────────────────────────────────
+  // ── Analysis mode toggle ───────────────────────────────
+  document.getElementById("analysis-mode").addEventListener("change", e => {
+    document.getElementById("sheet-label").style.display    = e.target.value === "all" ? "none" : "block";
+    document.getElementById("sheet-select-setup").style.display = e.target.value === "all" ? "none" : "block";
+  });
+
+
   document.getElementById("load-models-btn").addEventListener("click", async () => {
     const k    = document.getElementById("api-key-input").value.trim();
     const sel  = document.getElementById("model-select");
@@ -288,6 +294,7 @@ Write 3-4 sentences in plain, friendly English that anyone can understand. Avoid
   document.getElementById("save-setup-btn").addEventListener("click", () => {
     const k = document.getElementById("api-key-input").value.trim();
     const m = document.getElementById("model-select").value;
+    const analysisMode = document.getElementById("analysis-mode").value;
     if (!k.startsWith("AIza")) return alert("Please enter a valid Gemini API key (starts with AIza).");
     if (!m) return alert("Please load and select a model first.");
     apiKey = k;
@@ -298,6 +305,7 @@ Write 3-4 sentences in plain, friendly English that anyone can understand. Avoid
     sessionStorage.setItem("ai_ext_tone",   tone);
     sessionStorage.setItem("ai_ext_model",  selectedModel);
     sessionStorage.setItem("ai_ext_prompt", customPrompt);
+    sessionStorage.setItem("ai_ext_mode",   analysisMode);
     document.getElementById("sheet-select-main").value = document.getElementById("sheet-select-setup").value;
     showMain();
   });
@@ -325,9 +333,7 @@ Write 3-4 sentences in plain, friendly English that anyone can understand. Avoid
     const textEl  = document.getElementById("summary-text");
     const metaEl  = document.getElementById("summary-meta");
     const pillsEl = document.getElementById("filter-pills");
-    const sheetName = document.getElementById("sheet-select-main").value;
-    const sheet = sheets.find(s => s.name === sheetName);
-    if (!sheet) return;
+    const mode    = sessionStorage.getItem("ai_ext_mode") || "single";
 
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner"></span> Thinking…`;
@@ -336,29 +342,59 @@ Write 3-4 sentences in plain, friendly English that anyone can understand. Avoid
     pillsEl.innerHTML = ""; metaEl.textContent = "";
 
     try {
-      const [summaryResult, filtersResult] = await Promise.all([
-        sheet.getSummaryDataAsync({ maxRows: 500, ignoreSelection: false }),
-        sheet.getFiltersAsync()
-      ]);
+      const sheetsToRead = mode === "all"
+        ? sheets
+        : [sheets.find(s => s.name === document.getElementById("sheet-select-main").value)].filter(Boolean);
 
-      const activeFilters = filtersResult
-        .filter(f => f.filterType === "categorical" ? !f.isAllSelected && f.appliedValues?.length : true)
-        .map(f => {
-          if (f.filterType === "categorical") return `${f.fieldName}: ${f.appliedValues.map(v => v.formattedValue).join(", ")}`;
-          if (f.filterType === "range") return `${f.fieldName}: ${f.minValue?.formattedValue} → ${f.maxValue?.formattedValue}`;
-          return f.fieldName;
-        });
+      if (!sheetsToRead.length) throw new Error("No sheets found.");
 
-      pillsEl.innerHTML = activeFilters.length
-        ? activeFilters.map(f => `<span class="pill">🔍 ${f}</span>`).join("")
+      // Read all sheets in parallel
+      const sheetData = await Promise.all(sheetsToRead.map(async sheet => {
+        const [summary, filters] = await Promise.all([
+          sheet.getSummaryDataAsync({ maxRows: 500, ignoreSelection: false }),
+          sheet.getFiltersAsync()
+        ]);
+        const activeFilters = filters
+          .filter(f => f.filterType === "categorical" ? !f.isAllSelected && f.appliedValues?.length : true)
+          .map(f => {
+            if (f.filterType === "categorical") return `${f.fieldName}: ${f.appliedValues.map(v => v.formattedValue).join(", ")}`;
+            if (f.filterType === "range") return `${f.fieldName}: ${f.minValue?.formattedValue} → ${f.maxValue?.formattedValue}`;
+            return f.fieldName;
+          });
+        const cols = summary.columns.map(c => c.fieldName);
+        const rows = summary.data.slice(0, mode === "all" ? 100 : 200).map(row =>
+          row.map((cell, i) => `${cols[i]}: ${cell.formattedValue}`).join(" | ")
+        );
+        return { name: sheet.name, activeFilters, rows, rowCount: summary.data.length };
+      }));
+
+      // Render filter pills (all sheets combined)
+      const allFilters = [...new Set(sheetData.flatMap(s => s.activeFilters))];
+      pillsEl.innerHTML = allFilters.length
+        ? allFilters.map(f => `<span class="pill">🔍 ${f}</span>`).join("")
         : `<span class="pill" style="background:#f0f0f0;color:#888;">No active filters</span>`;
 
-      const cols = summaryResult.columns.map(c => c.fieldName);
-      const rows = summaryResult.data.slice(0, 200).map(row =>
-        row.map((cell, i) => `${cols[i]}: ${cell.formattedValue}`).join(" | ")
-      );
+      // Build prompt
+      let prompt;
+      if (mode === "all") {
+        const sheetsBlock = sheetData.map(s =>
+          `### Sheet: ${s.name} (${s.rowCount} rows)\nFilters: ${s.activeFilters.length ? s.activeFilters.join("; ") : "None"}\n${s.rows.join("\n")}`
+        ).join("\n\n");
 
-      const prompt = buildPrompt(sheetName, activeFilters, rows, summaryResult.data.length);
+        const toneInstructions = {
+          executive: "Write 4-5 concise sentences for a senior executive summarising the ENTIRE dashboard. Identify cross-sheet trends, the most critical insight, and any concerning patterns across all views. No jargon.",
+          analyst:   "Write 5-6 sentences with a data-analyst perspective across ALL sheets. Highlight how the different views relate to each other, key metrics, trends, and outliers.",
+          friendly:  "Write 4-5 sentences in plain English summarising the whole dashboard. Explain what the different charts are showing together and what the key takeaway is.",
+          custom:    customPrompt
+        };
+
+        prompt = tone === "custom"
+          ? customPrompt.replace(/{{data}}/g, sheetsBlock).replace(/{{filters}}/g, allFilters.join("; ") || "None").replace(/{{rowCount}}/g, sheetData.reduce((a, s) => a + s.rowCount, 0)).replace(/{{sheetName}}/g, "entire dashboard")
+          : `You are analysing a Tableau dashboard with ${sheetData.length} sheets.\n\n${sheetsBlock}\n\n${toneInstructions[tone] || toneInstructions.executive}\nRespond with the summary only — no preamble, no markdown.`;
+      } else {
+        const s = sheetData[0];
+        prompt = buildPrompt(s.name, s.activeFilters, s.rows, s.rowCount);
+      }
 
       textEl.textContent = "Generating summary…";
       const model = sessionStorage.getItem("ai_ext_model") || selectedModel;
@@ -372,7 +408,9 @@ Write 3-4 sentences in plain, friendly English that anyone can understand. Avoid
       const summary = result.candidates?.[0]?.content?.parts?.[0]?.text || "No summary returned.";
       box.className = "";
       textEl.textContent = summary;
-      metaEl.textContent = `${model} · ${summaryResult.data.length} rows · ${new Date().toLocaleTimeString()}`;
+      const totalRows = sheetData.reduce((a, s) => a + s.rowCount, 0);
+      metaEl.textContent = `${model} · ${mode === "all" ? sheetData.length + " sheets" : "1 sheet"} · ${totalRows} rows · ${new Date().toLocaleTimeString()}`;
+
     } catch (err) {
       box.className = "error";
       textEl.textContent = "Error: " + err.message;
