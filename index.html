@@ -11,31 +11,26 @@
     #setup-screen, #main-screen { display: none; }
     #setup-screen.active, #main-screen.active { display: block; }
 
-    .setup-card { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); max-width: 520px; margin: 0 auto; }
-    .setup-card h2 { font-size: 16px; margin-bottom: 6px; }
-    .setup-card p  { font-size: 13px; color: #666; margin-bottom: 16px; }
+    .card { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); max-width: 520px; margin: 0 auto; }
+    .card h2 { font-size: 16px; margin-bottom: 6px; }
+    .card p  { font-size: 13px; color: #666; margin-bottom: 16px; }
 
     label { font-size: 12px; font-weight: 600; color: #444; display: block; margin-bottom: 4px; }
-    input[type="password"], select, textarea {
-      width: 100%; padding: 9px 12px; border: 1px solid #ddd; border-radius: 6px;
-      font-size: 13px; margin-bottom: 6px; outline: none; transition: border 0.2s;
-    }
+    input[type="password"], select, textarea { width: 100%; padding: 9px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; margin-bottom: 6px; outline: none; transition: border 0.2s; }
     input:focus, select:focus, textarea:focus { border-color: #7c4dff; }
     textarea { resize: vertical; font-family: monospace; font-size: 12px; line-height: 1.5; }
-    .hint { font-size: 11px; color: #999; margin-bottom: 14px; }
+    .hint { font-size: 11px; color: #999; margin-bottom: 12px; }
 
     .row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
     .row select, .row input { margin: 0; flex: 1; }
 
-    /* Tabs */
-    .tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 2px solid #eee; }
+    .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 16px; }
     .tab { padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; color: #888; border-bottom: 2px solid transparent; margin-bottom: -2px; }
     .tab.active { color: #7c4dff; border-bottom-color: #7c4dff; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    /* Prompt variables reference */
-    .vars-box { background: #f7f0ff; border: 1px solid #e0d0ff; border-radius: 6px; padding: 10px 12px; margin-bottom: 14px; }
+    .vars-box { background: #f7f0ff; border: 1px solid #e0d0ff; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; }
     .vars-box p { font-size: 11px; color: #555; margin-bottom: 6px; font-weight: 600; }
     .var-chips { display: flex; flex-wrap: wrap; gap: 5px; }
     .var-chip { background: #ede7ff; color: #5e35b1; font-size: 11px; padding: 3px 8px; border-radius: 4px; font-family: monospace; cursor: pointer; }
@@ -48,7 +43,7 @@
     .btn-primary:hover:not(:disabled) { opacity: 0.9; }
     .btn-secondary { background: #f0f0f5; color: #333; white-space: nowrap; }
     .btn-secondary:hover:not(:disabled) { background: #e5e5ef; }
-    .btn-ghost     { background: none; border: 1px solid #ddd; color: #777; font-size: 11px; padding: 5px 10px; border-radius: 6px; cursor: pointer; }
+    .btn-ghost { background: none; border: 1px solid #ddd; color: #777; font-size: 11px; padding: 5px 10px; border-radius: 6px; cursor: pointer; }
     .btn-ghost:hover { border-color: #7c4dff; color: #7c4dff; }
 
     .toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -69,28 +64,26 @@
     #settings-link { font-size: 11px; color: #aaa; cursor: pointer; text-decoration: underline; text-align: right; display: block; margin-top: 10px; }
     #settings-link:hover { color: #7c4dff; }
 
-    #debug-log { background:#f4f4f4; border:1px solid #ddd; border-radius:6px; padding:8px 10px; font-size:11px; color:#555; font-family:monospace; margin-bottom:14px; max-height:80px; overflow-y:auto; }
-    #model-hint { font-size: 11px; margin-bottom: 14px; }
+    #debug-log { background: #f4f4f4; border: 1px solid #ddd; border-radius: 6px; padding: 8px 10px; font-size: 11px; color: #555; font-family: monospace; margin-bottom: 14px; max-height: 80px; overflow-y: auto; }
   </style>
 </head>
 <body>
 
-<!-- ══════════════ SETUP SCREEN ══════════════ -->
+<!-- ══════════ SETUP ══════════ -->
 <div id="setup-screen">
-  <div class="setup-card">
-    <h2>🤖 AI Summary — Setup <span style="font-size:11px;color:#aaa;font-weight:400;">v2.1</span></h2>
-    <p>Configure your extension settings. All data is stored only in your browser.</p>
-
+  <div class="card">
+    <h2>🤖 AI Summary — Setup <span style="font-size:11px;color:#aaa;font-weight:400;">v2.2</span></h2>
+    <p>Configure your extension. Settings are stored only in your browser session.</p>
     <div id="debug-log"></div>
 
-    <!-- Tabs -->
     <div class="tabs">
-      <div class="tab active" data-tab="tab-connection">🔌 Connection</div>
+      <div class="tab active" data-tab="tab-conn">🔌 Connection</div>
       <div class="tab" data-tab="tab-prompt">✏️ Prompt</div>
     </div>
 
-    <!-- Tab: Connection -->
-    <div id="tab-connection" class="tab-panel active">
+    <!-- Connection tab -->
+    <div id="tab-conn" class="tab-panel active">
+
       <label>Gemini API Key</label>
       <div class="row">
         <input type="password" id="api-key-input" placeholder="AIza..." />
@@ -99,30 +92,34 @@
       <p class="hint">Get yours at aistudio.google.com → Get API Key</p>
 
       <label>Gemini Model</label>
-      <div class="row">
-        <select id="model-select">
-          <option value="">— enter key and click Load Models —</option>
-        </select>
-      </div>
+      <select id="model-select"><option value="">— enter key and click Load Models —</option></select>
       <p id="model-hint" class="hint">No models loaded yet.</p>
 
-      <label>Sheet to summarise</label>
-      <select id="sheet-select-setup"><option>Loading sheets…</option></select>
+      <label>Analysis mode</label>
+      <select id="analysis-mode">
+        <option value="single">Single sheet</option>
+        <option value="all">Entire dashboard (all sheets)</option>
+      </select>
+      <p class="hint">In "Entire dashboard" mode all sheets are read and combined into one summary.</p>
+
+      <div id="sheet-row">
+        <label>Sheet to summarise</label>
+        <select id="sheet-select-setup"><option>Loading sheets…</option></select>
+      </div>
 
       <label>Summary tone</label>
       <select id="tone-select">
         <option value="executive">Executive (brief, business-focused)</option>
         <option value="analyst">Analyst (detailed, data-driven)</option>
         <option value="friendly">Friendly (plain English)</option>
-        <option value="custom">Custom (use my prompt below)</option>
+        <option value="custom">Custom (use my prompt)</option>
       </select>
-      <p class="hint">Select "Custom" to use your own prompt in the Prompt tab.</p>
     </div>
 
-    <!-- Tab: Prompt -->
+    <!-- Prompt tab -->
     <div id="tab-prompt" class="tab-panel">
       <div class="vars-box">
-        <p>Available variables — click to insert at cursor:</p>
+        <p>Click a variable to insert it at the cursor:</p>
         <div class="var-chips">
           <span class="var-chip" data-var="{{sheetName}}">{{sheetName}}</span>
           <span class="var-chip" data-var="{{filters}}">{{filters}}</span>
@@ -130,20 +127,19 @@
           <span class="var-chip" data-var="{{rowCount}}">{{rowCount}}</span>
         </div>
       </div>
-
       <label>Custom Prompt</label>
-      <textarea id="custom-prompt" rows="10" placeholder="Write your custom prompt here…"></textarea>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+      <textarea id="custom-prompt" rows="10"></textarea>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
         <button class="btn-ghost" id="reset-prompt-btn">↺ Reset to default</button>
       </div>
-      <p class="hint">Use the variables above to inject live dashboard data into your prompt. Set tone to "Custom" on the Connection tab to use this prompt.</p>
+      <p class="hint">Set tone to "Custom" on the Connection tab to use this prompt.</p>
     </div>
 
-    <button class="btn btn-primary" id="save-setup-btn">Save & Continue</button>
+    <button class="btn btn-primary" id="save-setup-btn">Save &amp; Continue</button>
   </div>
 </div>
 
-<!-- ══════════════ MAIN SCREEN ══════════════ -->
+<!-- ══════════ MAIN ══════════ -->
 <div id="main-screen">
   <div class="toolbar">
     <select id="sheet-select-main"></select>
@@ -155,303 +151,290 @@
       <span class="summary-label">AI Summary</span>
       <span class="summary-meta" id="summary-meta"></span>
     </div>
-    <div id="summary-text" style="color:#bbb;font-style:italic;">Select a sheet and click "Generate Summary" to begin.</div>
+    <div id="summary-text" style="color:#bbb;font-style:italic;">Click "Generate Summary" to begin.</div>
   </div>
   <a id="settings-link">⚙ Change settings</a>
 </div>
 
 <script>
-  // ── Default prompt ─────────────────────────────────────
-  const DEFAULT_PROMPT = `You are summarising a Tableau dashboard worksheet called "{{sheetName}}".
-Active filters: {{filters}}
-Data ({{rowCount}} rows total, showing up to 200):
-{{data}}
-Write 3-4 concise sentences for a senior executive. Focus on the most important business insight, top performers, and critical issues. No jargon. Respond with the summary only — no preamble, no markdown.`;
+// ── Default prompt ──────────────────────────────────────
+var DEFAULT_PROMPT = 'You are summarising a Tableau dashboard worksheet called "{{sheetName}}".\nActive filters: {{filters}}\nData ({{rowCount}} rows, showing up to 200):\n{{data}}\nWrite 3-4 concise sentences for a senior executive. Focus on the most important business insight, top performers, and critical issues. No jargon. Respond with the summary only — no preamble, no markdown.';
 
-  const TONE_PROMPTS = {
-    executive: `You are summarising a Tableau dashboard worksheet called "{{sheetName}}".
-Active filters: {{filters}}
-Data ({{rowCount}} rows, showing up to 200):
-{{data}}
-Write 3-4 concise sentences for a senior executive. Focus on the most important business insight, top performers, and critical issues. No jargon. Respond with the summary only — no preamble, no markdown.`,
-    analyst: `You are summarising a Tableau dashboard worksheet called "{{sheetName}}".
-Active filters: {{filters}}
-Data ({{rowCount}} rows, showing up to 200):
-{{data}}
-Write 4-5 sentences with a data-analyst perspective. Include specific numbers, trends, outliers, and comparisons between segments. Respond with the summary only — no preamble, no markdown.`,
-    friendly: `You are summarising a Tableau dashboard worksheet called "{{sheetName}}".
-Active filters: {{filters}}
-Data ({{rowCount}} rows, showing up to 200):
-{{data}}
-Write 3-4 sentences in plain, friendly English that anyone can understand. Avoid technical terms. Respond with the summary only — no preamble, no markdown.`
-  };
+var TONE_PROMPTS = {
+  executive: 'You are summarising a Tableau dashboard worksheet called "{{sheetName}}".\nActive filters: {{filters}}\nData ({{rowCount}} rows):\n{{data}}\nWrite 3-4 concise sentences for a senior executive. Focus on the most important business insight, top performers, and critical issues. No jargon. Summary only, no markdown.',
+  analyst:   'You are summarising a Tableau dashboard worksheet called "{{sheetName}}".\nActive filters: {{filters}}\nData ({{rowCount}} rows):\n{{data}}\nWrite 4-5 sentences with a data-analyst perspective. Include specific numbers, trends, outliers, and comparisons. Summary only, no markdown.',
+  friendly:  'You are summarising a Tableau dashboard worksheet called "{{sheetName}}".\nActive filters: {{filters}}\nData ({{rowCount}} rows):\n{{data}}\nWrite 3-4 sentences in plain, friendly English. Avoid technical terms. Summary only, no markdown.'
+};
 
-  // ── Helpers ────────────────────────────────────────────
-  function log(msg) {
-    const el = document.getElementById("debug-log");
-    if (!el) return;
-    el.innerHTML += `[${new Date().toLocaleTimeString()}] ${msg}<br>`;
-    el.scrollTop = el.scrollHeight;
+// ── State ───────────────────────────────────────────────
+var apiKey = '', tone = 'executive', selectedModel = '', sheets = [], customPrompt = DEFAULT_PROMPT;
+
+// ── Log ─────────────────────────────────────────────────
+function log(msg) {
+  var el = document.getElementById('debug-log');
+  if (!el) return;
+  el.innerHTML += '[' + new Date().toLocaleTimeString() + '] ' + msg + '<br>';
+  el.scrollTop = el.scrollHeight;
+}
+
+// ── Tabs ─────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ── Variable chips ───────────────────────────────────────
+document.querySelectorAll('.var-chip').forEach(function(chip) {
+  chip.addEventListener('click', function() {
+    var ta = document.getElementById('custom-prompt');
+    var val = chip.dataset.var;
+    var s = ta.selectionStart, e = ta.selectionEnd;
+    ta.value = ta.value.slice(0, s) + val + ta.value.slice(e);
+    ta.selectionStart = ta.selectionEnd = s + val.length;
+    ta.focus();
+  });
+});
+
+// ── Reset prompt ─────────────────────────────────────────
+document.getElementById('reset-prompt-btn').addEventListener('click', function() {
+  if (confirm('Reset prompt to default?')) {
+    document.getElementById('custom-prompt').value = DEFAULT_PROMPT;
   }
+});
 
-  // ── State ──────────────────────────────────────────────
-  let apiKey = "", tone = "executive", selectedModel = "", sheets = [], customPrompt = DEFAULT_PROMPT;
+// ── Analysis mode toggle ─────────────────────────────────
+document.getElementById('analysis-mode').addEventListener('change', function() {
+  document.getElementById('sheet-row').style.display = this.value === 'all' ? 'none' : 'block';
+});
 
-  // ── Tabs ───────────────────────────────────────────────
-  document.querySelectorAll(".tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-      tab.classList.add("active");
-      document.getElementById(tab.dataset.tab).classList.add("active");
-    });
+// ── Screen helpers ───────────────────────────────────────
+function showSetup() {
+  document.getElementById('setup-screen').classList.add('active');
+  document.getElementById('main-screen').classList.remove('active');
+  if (apiKey) document.getElementById('api-key-input').value = apiKey;
+  document.getElementById('tone-select').value = tone;
+  document.getElementById('custom-prompt').value = customPrompt;
+}
+function showMain() {
+  document.getElementById('setup-screen').classList.remove('active');
+  document.getElementById('main-screen').classList.add('active');
+}
+function showBrowserPreview() {
+  sheets = [{ name: 'Sheet 1 (Preview — not in Tableau)' }];
+  populateSheetDropdowns();
+  showSetup();
+}
+function showError(msg) {
+  document.getElementById('summary-box').className = 'error';
+  document.getElementById('summary-text').textContent = msg;
+}
+
+// ── Sheet dropdowns ──────────────────────────────────────
+function populateSheetDropdowns() {
+  ['sheet-select-setup', 'sheet-select-main'].forEach(function(id) {
+    var sel = document.getElementById(id);
+    sel.innerHTML = sheets.map(function(s) {
+      return '<option value="' + s.name + '">' + s.name + '</option>';
+    }).join('');
   });
+}
 
-  // ── Variable chips → insert into textarea ──────────────
-  document.querySelectorAll(".var-chip").forEach(chip => {
-    chip.addEventListener("click", () => {
-      const ta  = document.getElementById("custom-prompt");
-      const val = chip.dataset.var;
-      const start = ta.selectionStart, end = ta.selectionEnd;
-      ta.value = ta.value.slice(0, start) + val + ta.value.slice(end);
-      ta.selectionStart = ta.selectionEnd = start + val.length;
-      ta.focus();
+// ── Load models ──────────────────────────────────────────
+document.getElementById('load-models-btn').addEventListener('click', async function() {
+  var k    = document.getElementById('api-key-input').value.trim();
+  var sel  = document.getElementById('model-select');
+  var hint = document.getElementById('model-hint');
+  if (!k) { alert('Enter your API key first.'); return; }
+  sel.innerHTML = '<option>Loading…</option>';
+  hint.textContent = 'Fetching models…'; hint.style.color = '#999';
+  try {
+    var resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + k);
+    var data = await resp.json();
+    if (!resp.ok) throw new Error(data.error && data.error.message || 'API error ' + resp.status);
+    var models = (data.models || []).filter(function(m) {
+      return m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent');
     });
-  });
+    if (!models.length) throw new Error('No generateContent models found.');
+    sel.innerHTML = models.map(function(m) {
+      var id = m.name.replace('models/', '');
+      return '<option value="' + id + '">' + (m.displayName || id) + '</option>';
+    }).join('');
+    var best = Array.from(sel.options).find(function(o) { return o.value.includes('flash') && !o.value.includes('lite'); })
+            || Array.from(sel.options).find(function(o) { return o.value.includes('flash'); });
+    if (best) best.selected = true;
+    hint.textContent = '✓ ' + models.length + ' models loaded'; hint.style.color = '#4caf50';
+  } catch(err) {
+    sel.innerHTML = '<option value="">— failed to load —</option>';
+    hint.textContent = 'Error: ' + err.message; hint.style.color = '#e53935';
+  }
+});
 
-  // ── Reset prompt ───────────────────────────────────────
-  document.getElementById("reset-prompt-btn").addEventListener("click", () => {
-    if (confirm("Reset prompt to default?")) {
-      document.getElementById("custom-prompt").value = DEFAULT_PROMPT;
+// ── Save setup ───────────────────────────────────────────
+document.getElementById('save-setup-btn').addEventListener('click', function() {
+  var k = document.getElementById('api-key-input').value.trim();
+  var m = document.getElementById('model-select').value;
+  if (!k.startsWith('AIza')) { alert('Please enter a valid Gemini API key (starts with AIza).'); return; }
+  if (!m) { alert('Please load and select a model first.'); return; }
+  apiKey = k;
+  tone = document.getElementById('tone-select').value;
+  selectedModel = m;
+  customPrompt = document.getElementById('custom-prompt').value || DEFAULT_PROMPT;
+  var mode = document.getElementById('analysis-mode').value;
+  sessionStorage.setItem('ai_ext_key',    apiKey);
+  sessionStorage.setItem('ai_ext_tone',   tone);
+  sessionStorage.setItem('ai_ext_model',  selectedModel);
+  sessionStorage.setItem('ai_ext_prompt', customPrompt);
+  sessionStorage.setItem('ai_ext_mode',   mode);
+  document.getElementById('sheet-select-main').value = document.getElementById('sheet-select-setup').value;
+  showMain();
+});
+
+document.getElementById('settings-link').addEventListener('click', showSetup);
+
+// ── Build prompt (single sheet) ──────────────────────────
+function buildPrompt(sheetName, activeFilters, rows, rowCount) {
+  var template = tone === 'custom' ? customPrompt : (TONE_PROMPTS[tone] || TONE_PROMPTS.executive);
+  return template
+    .replace(/{{sheetName}}/g, sheetName)
+    .replace(/{{filters}}/g,   activeFilters.length ? activeFilters.join('; ') : 'None')
+    .replace(/{{data}}/g,      rows.join('\n'))
+    .replace(/{{rowCount}}/g,  rowCount);
+}
+
+// ── Generate summary ─────────────────────────────────────
+document.getElementById('generate-btn').addEventListener('click', generateSummary);
+
+async function generateSummary() {
+  var btn     = document.getElementById('generate-btn');
+  var box     = document.getElementById('summary-box');
+  var textEl  = document.getElementById('summary-text');
+  var metaEl  = document.getElementById('summary-meta');
+  var pillsEl = document.getElementById('filter-pills');
+  var mode    = sessionStorage.getItem('ai_ext_mode') || 'single';
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Thinking…';
+  box.className = '';
+  textEl.textContent = 'Fetching dashboard data…';
+  pillsEl.innerHTML = ''; metaEl.textContent = '';
+
+  try {
+    var sheetsToRead = mode === 'all'
+      ? sheets
+      : sheets.filter(function(s) { return s.name === document.getElementById('sheet-select-main').value; });
+
+    if (!sheetsToRead.length) throw new Error('No sheets found.');
+
+    var maxRows = mode === 'all' ? 100 : 200;
+
+    var sheetData = await Promise.all(sheetsToRead.map(async function(sheet) {
+      var results = await Promise.all([
+        sheet.getSummaryDataAsync({ maxRows: 500, ignoreSelection: false }),
+        sheet.getFiltersAsync()
+      ]);
+      var summary = results[0], filters = results[1];
+      var activeFilters = filters
+        .filter(function(f) { return f.filterType === 'categorical' ? !f.isAllSelected && f.appliedValues && f.appliedValues.length : true; })
+        .map(function(f) {
+          if (f.filterType === 'categorical') return f.fieldName + ': ' + f.appliedValues.map(function(v) { return v.formattedValue; }).join(', ');
+          if (f.filterType === 'range') return f.fieldName + ': ' + (f.minValue && f.minValue.formattedValue) + ' → ' + (f.maxValue && f.maxValue.formattedValue);
+          return f.fieldName;
+        });
+      var cols = summary.columns.map(function(c) { return c.fieldName; });
+      var rows = summary.data.slice(0, maxRows).map(function(row) {
+        return row.map(function(cell, i) { return cols[i] + ': ' + cell.formattedValue; }).join(' | ');
+      });
+      return { name: sheet.name, activeFilters: activeFilters, rows: rows, rowCount: summary.data.length };
+    }));
+
+    var allFilters = [];
+    sheetData.forEach(function(s) { s.activeFilters.forEach(function(f) { if (!allFilters.includes(f)) allFilters.push(f); }); });
+    pillsEl.innerHTML = allFilters.length
+      ? allFilters.map(function(f) { return '<span class="pill">🔍 ' + f + '</span>'; }).join('')
+      : '<span class="pill" style="background:#f0f0f0;color:#888;">No active filters</span>';
+
+    var prompt;
+    if (mode === 'all') {
+      var sheetsBlock = sheetData.map(function(s) {
+        return '### Sheet: ' + s.name + ' (' + s.rowCount + ' rows)\nFilters: ' + (s.activeFilters.length ? s.activeFilters.join('; ') : 'None') + '\n' + s.rows.join('\n');
+      }).join('\n\n');
+      var toneInstr = {
+        executive: 'Write 4-5 concise sentences for a senior executive summarising the ENTIRE dashboard. Identify cross-sheet trends, the most critical insight, and any concerning patterns. No jargon.',
+        analyst:   'Write 5-6 sentences with a data-analyst perspective across ALL sheets. Highlight how the different views relate, key metrics, trends, and outliers.',
+        friendly:  'Write 4-5 sentences in plain English summarising the whole dashboard. Explain what the different charts show together and the key takeaway.',
+        custom:    customPrompt
+      };
+      if (tone === 'custom') {
+        var totalRows = sheetData.reduce(function(a, s) { return a + s.rowCount; }, 0);
+        prompt = customPrompt.replace(/{{data}}/g, sheetsBlock).replace(/{{filters}}/g, allFilters.join('; ') || 'None').replace(/{{rowCount}}/g, totalRows).replace(/{{sheetName}}/g, 'entire dashboard');
+      } else {
+        prompt = 'You are analysing a Tableau dashboard with ' + sheetData.length + ' sheets.\n\n' + sheetsBlock + '\n\n' + (toneInstr[tone] || toneInstr.executive) + '\nRespond with the summary only — no preamble, no markdown.';
+      }
+    } else {
+      var s = sheetData[0];
+      prompt = buildPrompt(s.name, s.activeFilters, s.rows, s.rowCount);
     }
-  });
 
-  // ── Screen switching ───────────────────────────────────
-  function showSetup() {
-    document.getElementById("setup-screen").classList.add("active");
-    document.getElementById("main-screen").classList.remove("active");
-    if (apiKey) document.getElementById("api-key-input").value = apiKey;
-    document.getElementById("tone-select").value = tone;
-    document.getElementById("custom-prompt").value = customPrompt;
+    textEl.textContent = 'Generating summary…';
+    var model = sessionStorage.getItem('ai_ext_model') || selectedModel;
+    var resp = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) }
+    );
+    if (!resp.ok) { var e = await resp.json(); throw new Error(e.error && e.error.message || 'API error ' + resp.status); }
+    var result  = await resp.json();
+    var summary = result.candidates && result.candidates[0] && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts[0] && result.candidates[0].content.parts[0].text || 'No summary returned.';
+    box.className = '';
+    textEl.textContent = summary;
+    var totalRows = sheetData.reduce(function(a, s) { return a + s.rowCount; }, 0);
+    metaEl.textContent = model + ' · ' + (mode === 'all' ? sheetData.length + ' sheets' : '1 sheet') + ' · ' + totalRows + ' rows · ' + new Date().toLocaleTimeString();
+
+  } catch(err) {
+    box.className = 'error';
+    textEl.textContent = 'Error: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '✨ Generate Summary';
   }
-  function showMain() {
-    document.getElementById("setup-screen").classList.remove("active");
-    document.getElementById("main-screen").classList.add("active");
-  }
-  function showBrowserPreview() {
-    sheets = [{ name: "Sheet 1 (Preview — not in Tableau)" }];
+}
+
+// ── Tableau init ─────────────────────────────────────────
+function initExtension() {
+  log('tableau.extensions found — calling initializeAsync...');
+  tableau.extensions.initializeAsync({ configure: showSetup }).then(function() {
+    log('initializeAsync resolved ✓');
+    sheets = tableau.extensions.dashboardContent.dashboard.worksheets;
+    log('Found ' + sheets.length + ' worksheet(s): ' + sheets.map(function(s) { return s.name; }).join(', '));
     populateSheetDropdowns();
-    showSetup();
-  }
-  function showError(msg) {
-    document.getElementById("summary-box").className = "error";
-    document.getElementById("summary-text").textContent = msg;
-  }
-
-  // ── Sheet dropdowns ────────────────────────────────────
-  function populateSheetDropdowns() {
-    ["sheet-select-setup", "sheet-select-main"].forEach(id => {
-      const sel = document.getElementById(id);
-      sel.innerHTML = sheets.map(s => `<option value="${s.name}">${s.name}</option>`).join("");
-    });
-  }
-
-  // ── Analysis mode toggle ───────────────────────────────
-  document.getElementById("analysis-mode").addEventListener("change", e => {
-    document.getElementById("sheet-label").style.display    = e.target.value === "all" ? "none" : "block";
-    document.getElementById("sheet-select-setup").style.display = e.target.value === "all" ? "none" : "block";
-  });
-
-
-  document.getElementById("load-models-btn").addEventListener("click", async () => {
-    const k    = document.getElementById("api-key-input").value.trim();
-    const sel  = document.getElementById("model-select");
-    const hint = document.getElementById("model-hint");
-    if (!k) { alert("Enter your API key first."); return; }
-    sel.innerHTML = "<option>Loading…</option>";
-    hint.textContent = "Fetching models…"; hint.style.color = "#999";
-    try {
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${k}`);
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error?.message || "API error " + resp.status);
-      const models = (data.models || []).filter(m => m.supportedGenerationMethods?.includes("generateContent"));
-      if (!models.length) throw new Error("No generateContent models found.");
-      sel.innerHTML = models.map(m => {
-        const id = m.name.replace("models/", "");
-        return `<option value="${id}">${m.displayName || id}</option>`;
-      }).join("");
-      const best = [...sel.options].find(o => o.value.includes("flash") && !o.value.includes("lite"))
-                || [...sel.options].find(o => o.value.includes("flash"));
-      if (best) best.selected = true;
-      hint.textContent = `✓ ${models.length} models loaded`; hint.style.color = "#4caf50";
-    } catch (err) {
-      sel.innerHTML = "<option value=''>— failed to load —</option>";
-      hint.textContent = "Error: " + err.message; hint.style.color = "#e53935";
+    var savedKey    = sessionStorage.getItem('ai_ext_key');
+    var savedTone   = sessionStorage.getItem('ai_ext_tone')   || 'executive';
+    var savedModel  = sessionStorage.getItem('ai_ext_model')  || '';
+    var savedPrompt = sessionStorage.getItem('ai_ext_prompt') || DEFAULT_PROMPT;
+    if (savedKey) {
+      apiKey = savedKey; tone = savedTone; selectedModel = savedModel; customPrompt = savedPrompt;
+      log('Saved key found — going to main screen.');
+      showMain();
+    } else {
+      log('No saved key — showing setup.');
+      document.getElementById('custom-prompt').value = DEFAULT_PROMPT;
+      showSetup();
     }
-  });
+  }).catch(function(err) { log('initializeAsync ERROR: ' + err); showError('Failed to init: ' + err); });
+}
 
-  // ── Save setup ─────────────────────────────────────────
-  document.getElementById("save-setup-btn").addEventListener("click", () => {
-    const k = document.getElementById("api-key-input").value.trim();
-    const m = document.getElementById("model-select").value;
-    const analysisMode = document.getElementById("analysis-mode").value;
-    if (!k.startsWith("AIza")) return alert("Please enter a valid Gemini API key (starts with AIza).");
-    if (!m) return alert("Please load and select a model first.");
-    apiKey = k;
-    tone = document.getElementById("tone-select").value;
-    selectedModel = m;
-    customPrompt = document.getElementById("custom-prompt").value || DEFAULT_PROMPT;
-    sessionStorage.setItem("ai_ext_key",    apiKey);
-    sessionStorage.setItem("ai_ext_tone",   tone);
-    sessionStorage.setItem("ai_ext_model",  selectedModel);
-    sessionStorage.setItem("ai_ext_prompt", customPrompt);
-    sessionStorage.setItem("ai_ext_mode",   analysisMode);
-    document.getElementById("sheet-select-main").value = document.getElementById("sheet-select-setup").value;
-    showMain();
-  });
-
-  document.getElementById("settings-link").addEventListener("click", showSetup);
-
-  // ── Build prompt ───────────────────────────────────────
-  function buildPrompt(sheetName, activeFilters, rows, rowCount) {
-    const template = tone === "custom"
-      ? (customPrompt || DEFAULT_PROMPT)
-      : (TONE_PROMPTS[tone] || DEFAULT_PROMPT);
-    return template
-      .replace(/{{sheetName}}/g, sheetName)
-      .replace(/{{filters}}/g,   activeFilters.length ? activeFilters.join("; ") : "None")
-      .replace(/{{data}}/g,      rows.join("\n"))
-      .replace(/{{rowCount}}/g,  rowCount);
-  }
-
-  // ── Generate Summary ───────────────────────────────────
-  document.getElementById("generate-btn").addEventListener("click", generateSummary);
-
-  async function generateSummary() {
-    const btn     = document.getElementById("generate-btn");
-    const box     = document.getElementById("summary-box");
-    const textEl  = document.getElementById("summary-text");
-    const metaEl  = document.getElementById("summary-meta");
-    const pillsEl = document.getElementById("filter-pills");
-    const mode    = sessionStorage.getItem("ai_ext_mode") || "single";
-
-    btn.disabled = true;
-    btn.innerHTML = `<span class="spinner"></span> Thinking…`;
-    box.className = "";
-    textEl.textContent = "Fetching dashboard data…";
-    pillsEl.innerHTML = ""; metaEl.textContent = "";
-
-    try {
-      const sheetsToRead = mode === "all"
-        ? sheets
-        : [sheets.find(s => s.name === document.getElementById("sheet-select-main").value)].filter(Boolean);
-
-      if (!sheetsToRead.length) throw new Error("No sheets found.");
-
-      // Read all sheets in parallel
-      const sheetData = await Promise.all(sheetsToRead.map(async sheet => {
-        const [summary, filters] = await Promise.all([
-          sheet.getSummaryDataAsync({ maxRows: 500, ignoreSelection: false }),
-          sheet.getFiltersAsync()
-        ]);
-        const activeFilters = filters
-          .filter(f => f.filterType === "categorical" ? !f.isAllSelected && f.appliedValues?.length : true)
-          .map(f => {
-            if (f.filterType === "categorical") return `${f.fieldName}: ${f.appliedValues.map(v => v.formattedValue).join(", ")}`;
-            if (f.filterType === "range") return `${f.fieldName}: ${f.minValue?.formattedValue} → ${f.maxValue?.formattedValue}`;
-            return f.fieldName;
-          });
-        const cols = summary.columns.map(c => c.fieldName);
-        const rows = summary.data.slice(0, mode === "all" ? 100 : 200).map(row =>
-          row.map((cell, i) => `${cols[i]}: ${cell.formattedValue}`).join(" | ")
-        );
-        return { name: sheet.name, activeFilters, rows, rowCount: summary.data.length };
-      }));
-
-      // Render filter pills (all sheets combined)
-      const allFilters = [...new Set(sheetData.flatMap(s => s.activeFilters))];
-      pillsEl.innerHTML = allFilters.length
-        ? allFilters.map(f => `<span class="pill">🔍 ${f}</span>`).join("")
-        : `<span class="pill" style="background:#f0f0f0;color:#888;">No active filters</span>`;
-
-      // Build prompt
-      let prompt;
-      if (mode === "all") {
-        const sheetsBlock = sheetData.map(s =>
-          `### Sheet: ${s.name} (${s.rowCount} rows)\nFilters: ${s.activeFilters.length ? s.activeFilters.join("; ") : "None"}\n${s.rows.join("\n")}`
-        ).join("\n\n");
-
-        const toneInstructions = {
-          executive: "Write 4-5 concise sentences for a senior executive summarising the ENTIRE dashboard. Identify cross-sheet trends, the most critical insight, and any concerning patterns across all views. No jargon.",
-          analyst:   "Write 5-6 sentences with a data-analyst perspective across ALL sheets. Highlight how the different views relate to each other, key metrics, trends, and outliers.",
-          friendly:  "Write 4-5 sentences in plain English summarising the whole dashboard. Explain what the different charts are showing together and what the key takeaway is.",
-          custom:    customPrompt
-        };
-
-        prompt = tone === "custom"
-          ? customPrompt.replace(/{{data}}/g, sheetsBlock).replace(/{{filters}}/g, allFilters.join("; ") || "None").replace(/{{rowCount}}/g, sheetData.reduce((a, s) => a + s.rowCount, 0)).replace(/{{sheetName}}/g, "entire dashboard")
-          : `You are analysing a Tableau dashboard with ${sheetData.length} sheets.\n\n${sheetsBlock}\n\n${toneInstructions[tone] || toneInstructions.executive}\nRespond with the summary only — no preamble, no markdown.`;
-      } else {
-        const s = sheetData[0];
-        prompt = buildPrompt(s.name, s.activeFilters, s.rows, s.rowCount);
-      }
-
-      textEl.textContent = "Generating summary…";
-      const model = sessionStorage.getItem("ai_ext_model") || selectedModel;
-      const resp = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-        { method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) }
-      );
-      if (!resp.ok) { const e = await resp.json(); throw new Error(e.error?.message || "API error " + resp.status); }
-      const result  = await resp.json();
-      const summary = result.candidates?.[0]?.content?.parts?.[0]?.text || "No summary returned.";
-      box.className = "";
-      textEl.textContent = summary;
-      const totalRows = sheetData.reduce((a, s) => a + s.rowCount, 0);
-      metaEl.textContent = `${model} · ${mode === "all" ? sheetData.length + " sheets" : "1 sheet"} · ${totalRows} rows · ${new Date().toLocaleTimeString()}`;
-
-    } catch (err) {
-      box.className = "error";
-      textEl.textContent = "Error: " + err.message;
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = "✨ Generate Summary";
-    }
-  }
-
-  // ── Tableau Init ───────────────────────────────────────
-  function initExtension() {
-    log("tableau.extensions found — calling initializeAsync...");
-    tableau.extensions.initializeAsync({ configure: showSetup }).then(() => {
-      log("initializeAsync resolved ✓");
-      sheets = tableau.extensions.dashboardContent.dashboard.worksheets;
-      log(`Found ${sheets.length} worksheet(s): ${sheets.map(s => s.name).join(", ")}`);
-      populateSheetDropdowns();
-      const savedKey    = sessionStorage.getItem("ai_ext_key");
-      const savedTone   = sessionStorage.getItem("ai_ext_tone")   || "executive";
-      const savedModel  = sessionStorage.getItem("ai_ext_model")  || "";
-      const savedPrompt = sessionStorage.getItem("ai_ext_prompt") || DEFAULT_PROMPT;
-      if (savedKey) {
-        apiKey = savedKey; tone = savedTone; selectedModel = savedModel; customPrompt = savedPrompt;
-        log("Saved key found — going to main screen.");
-        showMain();
-      } else {
-        log("No saved key — showing setup.");
-        document.getElementById("custom-prompt").value = DEFAULT_PROMPT;
-        showSetup();
-      }
-    }).catch(err => { log("initializeAsync ERROR: " + err); showError("Failed to init: " + err); });
-  }
-
-  function waitForTableau(attempts) {
-    if (attempts <= 0) { log("Timed out — falling back to browser preview."); showBrowserPreview(); return; }
-    if (typeof tableau !== "undefined" && tableau.extensions) {
-      log("tableau.extensions detected ✓"); initExtension();
-    } else { setTimeout(() => waitForTableau(attempts - 1), 200); }
-  }
-  log("Script started — waiting for tableau...");
-  waitForTableau(25);
+function waitForTableau(attempts) {
+  if (attempts <= 0) { log('Timed out — falling back to browser preview.'); showBrowserPreview(); return; }
+  if (typeof tableau !== 'undefined' && tableau.extensions) {
+    log('tableau.extensions detected ✓'); initExtension();
+  } else { setTimeout(function() { waitForTableau(attempts - 1); }, 200); }
+}
+log('Script started — waiting for tableau...');
+waitForTableau(25);
 </script>
 </body>
 </html>
